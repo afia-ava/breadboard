@@ -3,6 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const genAI = new GoogleGenerativeAI(process.env.API_KEY ?? '');
 
+const MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-flash-latest',
+];
+
 const SYSTEM_PROMPT = `You are an expert hardware engineer with deep knowledge of electronics components, microcontrollers, sensors, and embedded systems. You help makers, hobbyists, and engineers select the right components for their projects.
 
 When recommending components:
@@ -27,9 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-latest',
-      systemInstruction: SYSTEM_PROMPT,
+    const TOOL_CONFIG = {
       tools: [
         {
           functionDeclarations: [
@@ -86,26 +91,35 @@ export async function POST(request: NextRequest) {
           allowedFunctionNames: ['recommend_hardware_components'],
         },
       },
-    });
+    };
 
-    const result = await model.generateContent(
-      `I want to build a hardware project: ${description.trim()}\n\nRecommend components across budget, mid-range, and premium tiers.`
-    );
+    const prompt = `I want to build a hardware project: ${description.trim()}\n\nRecommend components across budget, mid-range, and premium tiers.`;
 
-    const parts = result.response.candidates?.[0]?.content?.parts ?? [];
-    const fnCall = parts.find((p) => p.functionCall);
-
-    if (!fnCall?.functionCall) {
-      return NextResponse.json(
-        { error: 'Failed to generate recommendations. Please try again.' },
-        { status: 500 }
-      );
+    let lastError = '';
+    for (const modelName of MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: SYSTEM_PROMPT,
+          ...TOOL_CONFIG,
+        });
+        const result = await model.generateContent(prompt);
+        const parts = result.response.candidates?.[0]?.content?.parts ?? [];
+        const fnCall = parts.find((p) => p.functionCall);
+        if (fnCall?.functionCall) {
+          console.log(`Used model: ${modelName}`);
+          return NextResponse.json(fnCall.functionCall.args);
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err);
+        console.warn(`Model ${modelName} failed: ${lastError}`);
+      }
     }
 
-    return NextResponse.json(fnCall.functionCall.args);
+    return NextResponse.json({ error: `All models failed. Last error: ${lastError}` }, { status: 500 });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('Gemini API error:', message);
+    console.error('Request error:', message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
