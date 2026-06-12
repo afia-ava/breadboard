@@ -20,26 +20,182 @@ function Spinner() {
   );
 }
 
-function GlossyOrb({ size, top, right, bottom, left, opacity = 1 }: {
-  size: number; top?: string; right?: string; bottom?: string; left?: string; opacity?: number;
-}) {
+function HardwareBg() {
   return (
-    <div
-      className="absolute rounded-full pointer-events-none select-none"
-      style={{
-        width: size,
-        height: size,
-        top,
-        right,
-        bottom,
-        left,
-        opacity,
-        background:
-          'radial-gradient(circle at 32% 28%, rgba(255,255,255,0.95) 0%, rgba(210,180,255,0.75) 22%, rgba(100,200,255,0.55) 46%, rgba(30,20,80,0.85) 72%, rgba(0,0,0,0.97) 100%)',
-        boxShadow:
-          'inset -6px -8px 18px rgba(0,0,0,0.65), inset 4px 4px 10px rgba(255,255,255,0.35), 0 0 80px rgba(140,90,255,0.12)',
-      }}
-    />
+    <>
+      {/* QFP microcontroller chip — top right */}
+      <svg
+        className="absolute pointer-events-none select-none"
+        style={{ top: 0, right: 24, opacity: 0.22, width: 220, height: 220 }}
+        viewBox="0 0 220 220"
+        fill="none"
+        stroke="white"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="60" y="60" width="100" height="100" strokeWidth="1.5" />
+        <path d="M60 72 A12 12 0 0 1 72 60" strokeWidth="1.5" />
+        {[78, 93, 108, 123, 138].map((x) => (
+          <rect key={`t${x}`} x={x - 4} y={38} width="8" height="22" rx="1" strokeWidth="1" />
+        ))}
+        {[78, 93, 108, 123, 138].map((x) => (
+          <rect key={`b${x}`} x={x - 4} y={160} width="8" height="22" rx="1" strokeWidth="1" />
+        ))}
+        {[78, 93, 108, 123, 138].map((y) => (
+          <rect key={`l${y}`} x={38} y={y - 4} width="22" height="8" rx="1" strokeWidth="1" />
+        ))}
+        {[78, 93, 108, 123, 138].map((y) => (
+          <rect key={`r${y}`} x={160} y={y - 4} width="22" height="8" rx="1" strokeWidth="1" />
+        ))}
+        <line x1="110" y1="65" x2="110" y2="155" strokeWidth="0.5" strokeDasharray="3 5" />
+        <line x1="65" y1="110" x2="155" y2="110" strokeWidth="0.5" strokeDasharray="3 5" />
+        <rect x="82" y="88" width="56" height="44" rx="1" strokeWidth="0.6" strokeDasharray="2 3" />
+      </svg>
+
+      {/* Schematic: VCC → resistor → LED → GND with cap branch — left side */}
+      <svg
+        className="absolute pointer-events-none select-none"
+        style={{ top: 50, left: 16, opacity: 0.2, width: 200, height: 210 }}
+        viewBox="0 0 200 210"
+        fill="none"
+        stroke="white"
+        strokeLinecap="round"
+      >
+        <line x1="30" y1="14" x2="30" y2="30" strokeWidth="1" />
+        <line x1="18" y1="10" x2="42" y2="10" strokeWidth="1.5" />
+        <line x1="22" y1="5" x2="38" y2="5" strokeWidth="1" />
+        <line x1="26" y1="1" x2="34" y2="1" strokeWidth="0.7" />
+        <line x1="30" y1="30" x2="30" y2="48" strokeWidth="1" />
+        <rect x="20" y="48" width="20" height="38" rx="2" strokeWidth="1.2" />
+        <line x1="30" y1="86" x2="30" y2="106" strokeWidth="1" />
+        <circle cx="30" cy="106" r="3" fill="white" />
+        <line x1="30" y1="106" x2="80" y2="106" strokeWidth="1" />
+        <line x1="80" y1="94" x2="80" y2="104" strokeWidth="1" />
+        <line x1="68" y1="104" x2="92" y2="104" strokeWidth="2" />
+        <line x1="68" y1="110" x2="92" y2="110" strokeWidth="1" />
+        <line x1="80" y1="110" x2="80" y2="122" strokeWidth="1" />
+        <line x1="70" y1="122" x2="90" y2="122" strokeWidth="1.5" />
+        <line x1="73" y1="126" x2="87" y2="126" strokeWidth="1" />
+        <line x1="76" y1="130" x2="84" y2="130" strokeWidth="0.7" />
+        <line x1="30" y1="106" x2="30" y2="146" strokeWidth="1" />
+        <polygon points="22,146 38,146 30,162" strokeWidth="1.2" fill="none" />
+        <line x1="22" y1="162" x2="38" y2="162" strokeWidth="1.2" />
+        <line x1="36" y1="156" x2="42" y2="150" strokeWidth="0.8" />
+        <line x1="40" y1="158" x2="46" y2="152" strokeWidth="0.8" />
+        <line x1="30" y1="162" x2="30" y2="178" strokeWidth="1" />
+        <line x1="18" y1="178" x2="42" y2="178" strokeWidth="1.5" />
+        <line x1="22" y1="182" x2="38" y2="182" strokeWidth="1" />
+        <line x1="26" y1="186" x2="34" y2="186" strokeWidth="0.7" />
+        <line x1="80" y1="106" x2="130" y2="106" strokeWidth="1" />
+        <line x1="130" y1="88" x2="130" y2="124" strokeWidth="1" />
+        <rect x="122" y="88" width="16" height="36" rx="2" strokeWidth="1" strokeDasharray="2 2" />
+      </svg>
+
+      {/* PCB copper traces with vias — bottom right */}
+      <svg
+        className="absolute pointer-events-none select-none"
+        style={{ bottom: 10, right: 0, opacity: 0.18, width: 280, height: 190 }}
+        viewBox="0 0 280 190"
+        fill="none"
+        stroke="white"
+        strokeLinecap="round"
+      >
+        <path d="M20 165 H70 V100 H120 V50 H200" strokeWidth="2" />
+        <path d="M120 50 H160 V130 H220 V70 H280" strokeWidth="2" />
+        <path d="M20 115 H70" strokeWidth="2" />
+        <path d="M160 130 V190" strokeWidth="2" />
+        <path d="M70 100 V190" strokeWidth="2" />
+        <path d="M200 50 V10 H250" strokeWidth="2" />
+        {([[70,100],[120,50],[160,130],[220,70],[200,50]] as [number,number][]).map(([x,y]) => (
+          <g key={`${x}-${y}`}>
+            <circle cx={x} cy={y} r={6} strokeWidth="1.5" />
+            <circle cx={x} cy={y} r={2.5} fill="white" />
+          </g>
+        ))}
+        <rect x="190" y="3" width="22" height="14" rx="2" strokeWidth="1.2" />
+        <rect x="218" y="3" width="22" height="14" rx="2" strokeWidth="1.2" />
+        <rect x="270" y="62" width="10" height="16" rx="2" strokeWidth="1.2" />
+      </svg>
+
+      {/* NPN transistor schematic — top left */}
+      <svg
+        className="absolute pointer-events-none select-none"
+        style={{ top: 16, left: 20, opacity: 0.17, width: 130, height: 130 }}
+        viewBox="0 0 130 130"
+        fill="none"
+        stroke="white"
+        strokeLinecap="round"
+      >
+        {/* Circle body */}
+        <circle cx="70" cy="65" r="38" strokeWidth="1.2" />
+        {/* Base wire */}
+        <line x1="0" y1="65" x2="32" y2="65" strokeWidth="1.2" />
+        {/* Vertical base bar */}
+        <line x1="32" y1="44" x2="32" y2="86" strokeWidth="2" />
+        {/* Collector */}
+        <line x1="32" y1="50" x2="72" y2="32" strokeWidth="1.2" />
+        <line x1="72" y1="32" x2="72" y2="4" strokeWidth="1.2" />
+        {/* Emitter with arrow */}
+        <line x1="32" y1="80" x2="72" y2="98" strokeWidth="1.2" />
+        <line x1="72" y1="98" x2="72" y2="126" strokeWidth="1.2" />
+        {/* Arrow on emitter */}
+        <polygon points="60,92 72,98 65,106" fill="white" stroke="none" />
+        {/* Labels */}
+        <line x1="72" y1="4" x2="90" y2="4" strokeWidth="0.8" strokeDasharray="2 3" />
+        <line x1="0" y1="65" x2="0" y2="65" />
+      </svg>
+
+      {/* Pin header connector — right side, middle */}
+      <svg
+        className="absolute pointer-events-none select-none"
+        style={{ top: '38%', right: 16, opacity: 0.16, width: 80, height: 160 }}
+        viewBox="0 0 80 160"
+        fill="none"
+        stroke="white"
+        strokeLinecap="round"
+      >
+        {/* Connector housing */}
+        <rect x="20" y="4" width="40" height="152" rx="3" strokeWidth="1.2" />
+        {/* Pins */}
+        {[16, 32, 48, 64, 80, 96, 112, 128].map((y) => (
+          <g key={y}>
+            <rect x="32" y={y} width="16" height="10" rx="1" strokeWidth="1" />
+            <line x1="0" y1={y + 5} x2="32" y2={y + 5} strokeWidth="0.8" strokeDasharray="2 3" />
+            <line x1="48" y1={y + 5} x2="60" y2={y + 5} strokeWidth="0.8" strokeDasharray="2 3" />
+          </g>
+        ))}
+        {/* Pin 1 marker dot */}
+        <circle cx="26" cy="20" r="3" fill="white" />
+      </svg>
+
+      {/* Inductor coil — bottom left */}
+      <svg
+        className="absolute pointer-events-none select-none"
+        style={{ bottom: 30, left: 20, opacity: 0.16, width: 200, height: 80 }}
+        viewBox="0 0 200 80"
+        fill="none"
+        stroke="white"
+        strokeLinecap="round"
+      >
+        {/* Lead in */}
+        <line x1="0" y1="40" x2="20" y2="40" strokeWidth="1.2" />
+        {/* Coil arcs */}
+        <path d="M20 40 A10 10 0 0 1 40 40" strokeWidth="1.2" />
+        <path d="M40 40 A10 10 0 0 1 60 40" strokeWidth="1.2" />
+        <path d="M60 40 A10 10 0 0 1 80 40" strokeWidth="1.2" />
+        <path d="M80 40 A10 10 0 0 1 100 40" strokeWidth="1.2" />
+        <path d="M100 40 A10 10 0 0 1 120 40" strokeWidth="1.2" />
+        <path d="M120 40 A10 10 0 0 1 140 40" strokeWidth="1.2" />
+        {/* Lead out */}
+        <line x1="140" y1="40" x2="200" y2="40" strokeWidth="1.2" />
+        {/* Core line */}
+        <line x1="20" y1="24" x2="140" y2="24" strokeWidth="0.8" strokeDasharray="4 3" />
+        <line x1="20" y1="19" x2="140" y2="19" strokeWidth="0.8" strokeDasharray="4 3" />
+        {/* Labels */}
+        <line x1="0" y1="40" x2="0" y2="60" strokeWidth="0.8" strokeDasharray="2 3" />
+        <line x1="200" y1="40" x2="200" y2="60" strokeWidth="0.8" strokeDasharray="2 3" />
+      </svg>
+    </>
   );
 }
 
@@ -151,10 +307,7 @@ export default function Home() {
       {/* Landing — hero + form combined, full viewport height */}
       {!result && !loading && !error && (
         <section className="relative overflow-hidden" style={{ minHeight: 'calc(100vh - 56px)' }}>
-          {/* Orbs */}
-          <GlossyOrb size={200} top="40px" right="40px" opacity={0.85} />
-          <GlossyOrb size={80} top="200px" right="280px" opacity={0.5} />
-          <GlossyOrb size={44} bottom="60px" right="100px" opacity={0.3} />
+          <HardwareBg />
 
           <div className="relative z-10 flex flex-col items-center justify-center h-full max-w-2xl mx-auto px-6 pb-16 pt-4 text-center" style={{ minHeight: 'calc(100vh - 56px)' }}>
             <p className="text-xs text-zinc-600 uppercase tracking-widest font-mono mb-6">
@@ -212,6 +365,16 @@ export default function Home() {
             </form>
           </div>
         </section>
+      )}
+
+      {/* Footer — visible on landing when scrolled */}
+      {!result && !loading && !error && (
+        <footer className="border-t border-white/[0.06] py-6">
+          <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+            <span className="text-xs font-mono text-zinc-600">breadboard. © 2026</span>
+            <span className="text-xs text-zinc-700 font-mono uppercase tracking-widest">Built for makers</span>
+          </div>
+        </footer>
       )}
 
       {/* Results view */}
