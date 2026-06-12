@@ -34,65 +34,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const TOOL_CONFIG = {
-      tools: [
-        {
-          functionDeclarations: [
-            {
-              name: 'recommend_hardware_components',
-              description: 'Recommend hardware components across budget, mid-range, and premium tiers',
-              parameters: {
-                type: SchemaType.OBJECT,
-                required: ['project_title', 'project_summary', 'tiers'],
-                properties: {
-                  project_title: { type: SchemaType.STRING },
-                  project_summary: { type: SchemaType.STRING },
-                  tiers: {
-                    type: SchemaType.ARRAY,
-                    items: {
-                      type: SchemaType.OBJECT,
-                      required: ['tier', 'label', 'total_price_min', 'total_price_max', 'components', 'tradeoffs'],
-                      properties: {
-                        tier: { type: SchemaType.STRING },
-                        label: { type: SchemaType.STRING },
-                        total_price_min: { type: SchemaType.NUMBER },
-                        total_price_max: { type: SchemaType.NUMBER },
-                        components: {
-                          type: SchemaType.ARRAY,
-                          items: {
-                            type: SchemaType.OBJECT,
-                            required: ['name', 'price_min', 'price_max', 'purpose'],
-                            properties: {
-                              name: { type: SchemaType.STRING },
-                              price_min: { type: SchemaType.NUMBER },
-                              price_max: { type: SchemaType.NUMBER },
-                              purpose: { type: SchemaType.STRING },
-                              notes: { type: SchemaType.STRING },
-                            },
-                          },
-                        },
-                        tradeoffs: { type: SchemaType.STRING },
-                        gotchas: {
-                          type: SchemaType.ARRAY,
-                          items: { type: SchemaType.STRING },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      ],
-      toolConfig: {
-        functionCallingConfig: {
-          mode: FunctionCallingMode.ANY,
-          allowedFunctionNames: ['recommend_hardware_components'],
-        },
-      },
-    };
-
     const prompt = `I want to build a hardware project: ${description.trim()}\n\nRecommend components across budget, mid-range, and premium tiers.`;
 
     let lastError = '';
@@ -101,7 +42,59 @@ export async function POST(request: NextRequest) {
         const model = genAI.getGenerativeModel({
           model: modelName,
           systemInstruction: SYSTEM_PROMPT,
-          ...TOOL_CONFIG,
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: 'recommend_hardware_components',
+                  description: 'Recommend hardware components across budget, mid-range, and premium tiers',
+                  parameters: {
+                    type: SchemaType.OBJECT,
+                    required: ['project_title', 'project_summary', 'tiers'],
+                    properties: {
+                      project_title: { type: SchemaType.STRING, description: '' },
+                      project_summary: { type: SchemaType.STRING, description: '' },
+                      tiers: {
+                        type: SchemaType.ARRAY,
+                        items: {
+                          type: SchemaType.OBJECT,
+                          required: ['tier', 'label', 'total_price_min', 'total_price_max', 'components', 'tradeoffs'],
+                          properties: {
+                            tier: { type: SchemaType.STRING, description: '' },
+                            label: { type: SchemaType.STRING, description: '' },
+                            total_price_min: { type: SchemaType.NUMBER, description: '' },
+                            total_price_max: { type: SchemaType.NUMBER, description: '' },
+                            components: {
+                              type: SchemaType.ARRAY,
+                              items: {
+                                type: SchemaType.OBJECT,
+                                required: ['name', 'price_min', 'price_max', 'purpose'],
+                                properties: {
+                                  name: { type: SchemaType.STRING, description: '' },
+                                  price_min: { type: SchemaType.NUMBER, description: '' },
+                                  price_max: { type: SchemaType.NUMBER, description: '' },
+                                  purpose: { type: SchemaType.STRING, description: '' },
+                                  notes: { type: SchemaType.STRING, description: '' },
+                                },
+                              },
+                            },
+                            tradeoffs: { type: SchemaType.STRING, description: '' },
+                            gotchas: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING, description: '' } },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+          toolConfig: {
+            functionCallingConfig: {
+              mode: FunctionCallingMode.ANY,
+              allowedFunctionNames: ['recommend_hardware_components'],
+            },
+          },
         });
         const result = await model.generateContent(prompt);
         const parts = result.response.candidates?.[0]?.content?.parts ?? [];
