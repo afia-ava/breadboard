@@ -17,6 +17,7 @@ export interface Tier {
 }
 
 export interface RecommendationResult {
+  id?: string;
   project_title: string;
   project_summary: string;
   tiers: Tier[];

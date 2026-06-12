@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI, SchemaType, FunctionCallingMode } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '../../../lib/supabase';
 
 const genAI = new GoogleGenerativeAI(process.env.API_KEY ?? '');
 
@@ -113,6 +114,23 @@ export async function POST(request: NextRequest) {
               tier: TIER_MAP[String(t.tier).toLowerCase().replace(/[^a-z]/g, '')] ?? t.tier,
             }));
           }
+          // Save to Supabase (non-blocking — don't fail if DB write fails)
+          try {
+            const { data: row } = await supabase
+              .from('boms')
+              .insert({
+                description: description.trim(),
+                project_title: data.project_title,
+                project_summary: data.project_summary,
+                tiers: data.tiers,
+              })
+              .select('id')
+              .single();
+            if (row?.id) data.id = row.id;
+          } catch (dbErr) {
+            console.warn('Supabase save failed (non-fatal):', dbErr);
+          }
+
           return NextResponse.json(data);
         }
       } catch (err) {

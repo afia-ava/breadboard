@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import TierCard from './components/TierCard';
 import type { RecommendationResult } from '../types';
 
@@ -117,10 +118,10 @@ function HardwareBg() {
         <rect x="270" y="62" width="10" height="16" rx="2" strokeWidth="1.2" />
       </svg>
 
-      {/* NPN transistor schematic — top left */}
+      {/* NPN transistor schematic — bottom center */}
       <svg
         className="absolute pointer-events-none select-none"
-        style={{ top: 16, left: 20, opacity: 0.17, width: 130, height: 130 }}
+        style={{ bottom: 40, left: '42%', opacity: 0.17, width: 130, height: 130 }}
         viewBox="0 0 130 130"
         fill="none"
         stroke="white"
@@ -196,6 +197,27 @@ function HardwareBg() {
         <line x1="200" y1="40" x2="200" y2="60" strokeWidth="0.8" strokeDasharray="2 3" />
       </svg>
     </>
+  );
+}
+
+function ShareButton({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard.writeText(`${window.location.origin}/bom/${id}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+  return (
+    <button
+      onClick={copy}
+      className="inline-flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-white border border-white/[0.08] hover:border-white/20 px-4 py-1.5 rounded-full transition-colors"
+    >
+      {copied ? (
+        <><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> Copied!</>
+      ) : (
+        <><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy share link</>
+      )}
+    </button>
   );
 }
 
@@ -292,7 +314,7 @@ export default function Home() {
             breadboard.
           </button>
           <div className="flex items-center gap-6">
-            <span className="text-xs text-zinc-600 hidden sm:block">Hardware Advisor</span>
+            <Link href="/projects" className="text-xs text-zinc-600 hover:text-white transition-colors hidden sm:block">Hardware Advisor</Link>
             <span className="text-xs text-zinc-600 hidden sm:block">About</span>
             <button
               onClick={() => { setResult(null); setError(null); setDescription(''); }}
@@ -424,7 +446,10 @@ export default function Home() {
                 <h2 className="text-4xl sm:text-5xl font-black uppercase leading-tight mb-3">
                   {result.project_title}
                 </h2>
-                <p className="text-zinc-500 max-w-2xl leading-relaxed text-sm">{result.project_summary}</p>
+                <p className="text-zinc-500 max-w-2xl leading-relaxed text-sm mb-4">{result.project_summary}</p>
+                {result.id && (
+                  <ShareButton id={result.id} />
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {result.tiers.map((tier) => (
