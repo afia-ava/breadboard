@@ -33,38 +33,25 @@ const TOOL_PARAMETERS = {
         type: 'object',
         properties: {
           tier: { type: 'string', enum: ['budget', 'mid', 'premium'] },
-          label: {
-            type: 'string',
-            description: 'e.g. "Budget (<$20)" or "Mid-range ($20–60)" or "Premium ($60+)"',
-          },
-          total_price_min: { type: 'number', description: 'Minimum total cost in USD' },
-          total_price_max: { type: 'number', description: 'Maximum total cost in USD' },
+          label: { type: 'string' },
+          total_price_min: { type: 'number' },
+          total_price_max: { type: 'number' },
           components: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
-                name: { type: 'string', description: 'Component name and model/part number' },
-                price_min: { type: 'number', description: 'Min price in USD' },
-                price_max: { type: 'number', description: 'Max price in USD' },
-                purpose: { type: 'string', description: 'Role this component plays in the project' },
-                notes: {
-                  type: 'string',
-                  description: 'Optional: tips, alternatives, or compatibility warnings',
-                },
+                name: { type: 'string' },
+                price_min: { type: 'number' },
+                price_max: { type: 'number' },
+                purpose: { type: 'string' },
+                notes: { type: 'string' },
               },
               required: ['name', 'price_min', 'price_max', 'purpose'],
             },
           },
-          tradeoffs: {
-            type: 'string',
-            description: 'Honest pros and cons of choosing this budget tier',
-          },
-          gotchas: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'Compatibility issues, power requirements, or common mistakes to watch for',
-          },
+          tradeoffs: { type: 'string' },
+          gotchas: { type: 'array', items: { type: 'string' } },
         },
         required: ['tier', 'label', 'total_price_min', 'total_price_max', 'components', 'tradeoffs'],
       },
@@ -93,8 +80,7 @@ export async function POST(request: NextRequest) {
           functionDeclarations: [
             {
               name: 'recommend_hardware_components',
-              description:
-                'Recommend hardware components for a project across budget, mid-range, and premium tiers',
+              description: 'Recommend hardware components across budget, mid-range, and premium tiers',
               parameters: TOOL_PARAMETERS,
             },
           ],
@@ -109,7 +95,7 @@ export async function POST(request: NextRequest) {
     });
 
     const result = await model.generateContent(
-      `I want to build a hardware project that does the following:\n\n${description.trim()}\n\nPlease recommend components across budget, mid-range, and premium tiers.`
+      `I want to build a hardware project: ${description.trim()}\n\nRecommend components across budget, mid-range, and premium tiers.`
     );
 
     const parts = result.response.candidates?.[0]?.content?.parts ?? [];
@@ -124,7 +110,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(fnCall.functionCall.args);
   } catch (err) {
-    console.error('Error calling Gemini API:', err);
-    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Gemini API error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
