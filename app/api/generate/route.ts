@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType, FunctionCallingMode } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 
 const genAI = new GoogleGenerativeAI(process.env.API_KEY ?? '');
@@ -14,51 +14,6 @@ When recommending components:
 - Budget tier: use the cheapest viable parts (clones, breakout boards, AliExpress)
 - Mid-range tier: a solid balance of ease-of-use and capability
 - Premium tier: professional/production-grade parts with the best performance`;
-
-const TOOL_PARAMETERS = {
-  type: 'object' as const,
-  properties: {
-    project_title: {
-      type: 'string',
-      description: 'Concise, descriptive title for the hardware project',
-    },
-    project_summary: {
-      type: 'string',
-      description: '2–3 sentences explaining what the project does and the technical approach',
-    },
-    tiers: {
-      type: 'array',
-      description: 'Exactly 3 tiers in order: budget, mid, premium',
-      items: {
-        type: 'object',
-        properties: {
-          tier: { type: 'string', enum: ['budget', 'mid', 'premium'] },
-          label: { type: 'string' },
-          total_price_min: { type: 'number' },
-          total_price_max: { type: 'number' },
-          components: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                name: { type: 'string' },
-                price_min: { type: 'number' },
-                price_max: { type: 'number' },
-                purpose: { type: 'string' },
-                notes: { type: 'string' },
-              },
-              required: ['name', 'price_min', 'price_max', 'purpose'],
-            },
-          },
-          tradeoffs: { type: 'string' },
-          gotchas: { type: 'array', items: { type: 'string' } },
-        },
-        required: ['tier', 'label', 'total_price_min', 'total_price_max', 'components', 'tradeoffs'],
-      },
-    },
-  },
-  required: ['project_title', 'project_summary', 'tiers'],
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,14 +36,53 @@ export async function POST(request: NextRequest) {
             {
               name: 'recommend_hardware_components',
               description: 'Recommend hardware components across budget, mid-range, and premium tiers',
-              parameters: TOOL_PARAMETERS,
+              parameters: {
+                type: SchemaType.OBJECT,
+                required: ['project_title', 'project_summary', 'tiers'],
+                properties: {
+                  project_title: { type: SchemaType.STRING },
+                  project_summary: { type: SchemaType.STRING },
+                  tiers: {
+                    type: SchemaType.ARRAY,
+                    items: {
+                      type: SchemaType.OBJECT,
+                      required: ['tier', 'label', 'total_price_min', 'total_price_max', 'components', 'tradeoffs'],
+                      properties: {
+                        tier: { type: SchemaType.STRING },
+                        label: { type: SchemaType.STRING },
+                        total_price_min: { type: SchemaType.NUMBER },
+                        total_price_max: { type: SchemaType.NUMBER },
+                        components: {
+                          type: SchemaType.ARRAY,
+                          items: {
+                            type: SchemaType.OBJECT,
+                            required: ['name', 'price_min', 'price_max', 'purpose'],
+                            properties: {
+                              name: { type: SchemaType.STRING },
+                              price_min: { type: SchemaType.NUMBER },
+                              price_max: { type: SchemaType.NUMBER },
+                              purpose: { type: SchemaType.STRING },
+                              notes: { type: SchemaType.STRING },
+                            },
+                          },
+                        },
+                        tradeoffs: { type: SchemaType.STRING },
+                        gotchas: {
+                          type: SchemaType.ARRAY,
+                          items: { type: SchemaType.STRING },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           ],
         },
       ],
       toolConfig: {
         functionCallingConfig: {
-          mode: 'ANY' as const,
+          mode: FunctionCallingMode.ANY,
           allowedFunctionNames: ['recommend_hardware_components'],
         },
       },
