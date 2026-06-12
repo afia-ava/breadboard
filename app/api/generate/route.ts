@@ -101,7 +101,19 @@ export async function POST(request: NextRequest) {
         const fnCall = parts.find((p) => p.functionCall);
         if (fnCall?.functionCall) {
           console.log(`Used model: ${modelName}`);
-          return NextResponse.json(fnCall.functionCall.args);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const data = fnCall.functionCall.args as any;
+          // Normalize tier values so TierCard lookup never fails
+          if (Array.isArray(data?.tiers)) {
+            const TIER_MAP: Record<string, string> = {
+              budget: 'budget', mid: 'mid', 'mid-range': 'mid', midrange: 'mid', premium: 'premium',
+            };
+            data.tiers = data.tiers.map((t: any) => ({
+              ...t,
+              tier: TIER_MAP[String(t.tier).toLowerCase().replace(/[^a-z]/g, '')] ?? t.tier,
+            }));
+          }
+          return NextResponse.json(data);
         }
       } catch (err) {
         lastError = err instanceof Error ? err.message : String(err);

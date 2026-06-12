@@ -1,10 +1,11 @@
 import type { Tier } from '../../types';
 
-const TIER_META = {
-  budget:  { index: '01', label: 'Budget',    topBorder: '#52525b' },
-  mid:     { index: '02', label: 'Mid-range', topBorder: '#a1a1aa' },
-  premium: { index: '03', label: 'Premium',   topBorder: '#ffffff' },
-} as const;
+const TIER_META: Record<string, { index: string; label: string; topBorder: string }> = {
+  budget:   { index: '01', label: 'Budget',    topBorder: '#52525b' },
+  mid:      { index: '02', label: 'Mid-range', topBorder: '#a1a1aa' },
+  premium:  { index: '03', label: 'Premium',   topBorder: '#ffffff' },
+};
+const FALLBACK_META = { index: '--', label: 'Tier', topBorder: '#3f3f46' };
 
 function fmt(min: number, max: number) {
   if (min === max || max === 0) return `$${min}`;
@@ -12,7 +13,7 @@ function fmt(min: number, max: number) {
 }
 
 export default function TierCard({ tier }: { tier: Tier }) {
-  const meta = TIER_META[tier.tier];
+  const meta = TIER_META[tier.tier?.toLowerCase?.()] ?? FALLBACK_META;
   return (
     <div
       className="bg-zinc-950 rounded-2xl border border-white/[0.07] p-6 flex flex-col gap-5"
